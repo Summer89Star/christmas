@@ -237,8 +237,7 @@
             focusIndex: -1,
             focusTarget: null,
             hand: { detected: false, x: 0, y: 0 },
-            rotation: { x: 0, y: 0 },
-            touch: { active: false, startX: 0, startY: 0, lastX: 0, lastY: 0 }
+            rotation: { x: 0, y: 0 }
         };
 
         let scene, camera, renderer, composer;
@@ -757,56 +756,6 @@
             });
             document.getElementById('file-input').addEventListener('change', handleImageUpload);
 
-            // Touch controls for mobile
-            let touchStartTime = 0;
-
-            renderer.domElement.addEventListener('touchstart', (e) => {
-                if (e.touches.length === 1) {
-                    touchStartTime = Date.now();
-                    STATE.touch.active = true;
-                    STATE.touch.startX = e.touches[0].clientX;
-                    STATE.touch.startY = e.touches[0].clientY;
-                    STATE.touch.lastX = e.touches[0].clientX;
-                    STATE.touch.lastY = e.touches[0].clientY;
-                }
-            });
-
-            renderer.domElement.addEventListener('touchmove', (e) => {
-                if (STATE.touch.active && e.touches.length === 1) {
-                    e.preventDefault();
-                    const deltaX = e.touches[0].clientX - STATE.touch.lastX;
-                    const deltaY = e.touches[0].clientY - STATE.touch.lastY;
-
-                    STATE.rotation.y += deltaX * 0.005;
-                    STATE.rotation.x += deltaY * 0.005;
-                    STATE.rotation.x = Math.max(-Math.PI / 4, Math.min(Math.PI / 4, STATE.rotation.x));
-
-                    STATE.touch.lastX = e.touches[0].clientX;
-                    STATE.touch.lastY = e.touches[0].clientY;
-                }
-            }, { passive: false });
-
-            renderer.domElement.addEventListener('touchend', (e) => {
-                const touchDuration = Date.now() - touchStartTime;
-
-                // Quick tap (less than 200ms) - cycle through modes
-                if (touchDuration < 200 && e.changedTouches.length === 1) {
-                    const dx = Math.abs(e.changedTouches[0].clientX - STATE.touch.startX);
-                    const dy = Math.abs(e.changedTouches[0].clientY - STATE.touch.startY);
-
-                    // Only if no significant movement (not a swipe)
-                    if (dx < 10 && dy < 10) {
-                        if (STATE.mode === 'TREE') {
-                            STATE.mode = 'SCATTER';
-                        } else if (STATE.mode === 'SCATTER') {
-                            STATE.mode = 'TREE';
-                        }
-                    }
-                }
-
-                STATE.touch.active = false;
-            });
-
             // Music Control
             backgroundMusic = document.getElementById('background-music');
             backgroundMusic.volume = 0.4; // Set volume to 40%
@@ -857,9 +806,7 @@
             const elapsed = clock.getElapsedTime();
 
             // Rotation Logic
-            if (STATE.touch.active) {
-                // Touch control - manual rotation handled in touch events
-            } else if (STATE.mode === 'SCATTER' && STATE.hand.detected) {
+            if (STATE.mode === 'SCATTER' && STATE.hand.detected) {
                 const targetRotY = STATE.hand.x * Math.PI * 0.9;
                 const targetRotX = STATE.hand.y * Math.PI * 0.25;
                 STATE.rotation.y += (targetRotY - STATE.rotation.y) * 3.0 * dt;

@@ -57,27 +57,6 @@
             transition: opacity 0.5s ease; /* Ensure smooth transitions if needed */
         }
 
-        /* Blessing Text */
-        #blessing-text {
-            margin-top: 15px;
-            color: rgba(212, 175, 55, 0.8);
-            font-size: 14px;
-            letter-spacing: 2px;
-            text-align: center;
-            font-weight: 300;
-            text-shadow: 0 0 20px rgba(212, 175, 55, 0.4);
-            min-height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: opacity 1s ease;
-            max-width: 600px;
-            line-height: 1.6;
-        }
-        .blessing-fade {
-            opacity: 0;
-        }
-
         /* Upload Button - Restored & Elegant */
         .upload-wrapper {
             margin-top: 20px;
@@ -177,7 +156,6 @@
 
     <div id="ui-layer">
         <h1>Merry Christmas</h1>
-        <div id="blessing-text"></div>
 
         <div class="upload-wrapper">
             <label class="upload-btn">
@@ -248,22 +226,7 @@
         let handLandmarker, video, webcamCanvas, webcamCtx;
         let caneTexture;
         let backgroundMusic, musicPlaying = false;
-        let giftBoxes = [];
-
-        // Christmas Blessings
-        const blessings = [
-            "May your days be merry and bright ✨",
-            "Wishing you joy, peace, and love this season 🎄",
-            "May the magic of Christmas fill your heart ❄️",
-            "Warmest wishes for a wonderful holiday 🌟",
-            "Peace on earth, goodwill to all 🕊️",
-            "May your home be filled with laughter and love 🎁",
-            "Sending you holiday cheer and happy memories 🔔",
-            "May this season bring you endless blessings ⭐",
-            "Wishing you a season of wonder and delight 🎅",
-            "May your heart be light and your spirit bright 💫"
-        ];
-        let currentBlessingIndex = 0; 
+        let giftBoxes = []; 
 
         async function init() {
             initThree();
@@ -276,7 +239,6 @@
             createChristmasCharacters();
             setupPostProcessing();
             setupEvents();
-            initBlessings();
             await initMediaPipe();
 
             const loader = document.getElementById('loader');
@@ -724,27 +686,6 @@
             } else {
                 STATE.hand.detected = false;
             }
-        }
-
-        // Blessing Rotation
-        function initBlessings() {
-            const blessingElement = document.getElementById('blessing-text');
-
-            function showNextBlessing() {
-                blessingElement.classList.add('blessing-fade');
-
-                setTimeout(() => {
-                    currentBlessingIndex = (currentBlessingIndex + 1) % blessings.length;
-                    blessingElement.textContent = blessings[currentBlessingIndex];
-                    blessingElement.classList.remove('blessing-fade');
-                }, 1000);
-            }
-
-            // Show first blessing
-            blessingElement.textContent = blessings[0];
-
-            // Rotate every 5 seconds
-            setInterval(showNextBlessing, 5000);
         }
 
         function setupEvents() {

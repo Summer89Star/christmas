@@ -582,24 +582,39 @@
                 lid.add(bow);
                 gift.userData.bow = bow;
 
-                // Surprise particles (hidden initially)
+                // Surprise ribbons (hidden initially)
                 const surpriseGroup = new THREE.Group();
                 surpriseGroup.visible = false;
-                for(let j = 0; j < 20; j++) {
-                    const particleGeo = new THREE.SphereGeometry(0.05, 4, 4);
-                    const particleMat = new THREE.MeshBasicMaterial({
-                        color: Math.random() > 0.5 ? 0xffdd00 : 0xffffff,
+
+                // Create colorful ribbons
+                const ribbonColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff, 0xffa500, 0xff69b4];
+
+                for(let j = 0; j < 15; j++) {
+                    // Create a ribbon shape (thin rectangle)
+                    const ribbonGeo = new THREE.PlaneGeometry(0.15, 0.8);
+                    const ribbonMat = new THREE.MeshBasicMaterial({
+                        color: ribbonColors[Math.floor(Math.random() * ribbonColors.length)],
+                        side: THREE.DoubleSide,
                         transparent: true,
-                        opacity: 0.8
+                        opacity: 0.9
                     });
-                    const particle = new THREE.Mesh(particleGeo, particleMat);
-                    particle.userData.velocity = new THREE.Vector3(
-                        (Math.random() - 0.5) * 0.5,
-                        Math.random() * 0.8,
-                        (Math.random() - 0.5) * 0.5
+                    const ribbon = new THREE.Mesh(ribbonGeo, ribbonMat);
+
+                    // Random initial velocity
+                    ribbon.userData.velocity = new THREE.Vector3(
+                        (Math.random() - 0.5) * 1.2,
+                        0.8 + Math.random() * 1.5,
+                        (Math.random() - 0.5) * 1.2
                     );
-                    particle.userData.life = 1.0;
-                    surpriseGroup.add(particle);
+                    ribbon.userData.angularVelocity = new THREE.Vector3(
+                        (Math.random() - 0.5) * 8,
+                        (Math.random() - 0.5) * 8,
+                        (Math.random() - 0.5) * 8
+                    );
+                    ribbon.userData.life = 1.0;
+                    ribbon.userData.gravity = -0.8;
+
+                    surpriseGroup.add(ribbon);
                 }
                 gift.add(surpriseGroup);
                 gift.userData.surprise = surpriseGroup;
@@ -780,11 +795,18 @@
                 if(gift.userData.surprise) {
                     gift.userData.surprise.visible = true;
 
-                    // Reset surprise particles
+                    // Reset surprise ribbons
                     gift.userData.surprise.children.forEach(p => {
                         p.position.set(0, gift.userData.size * 0.5, 0);
+                        p.rotation.set(0, 0, 0);
                         p.userData.life = 1.0;
-                        p.material.opacity = 0.8;
+                        p.material.opacity = 0.9;
+                        // Randomize velocity again for variety
+                        p.userData.velocity.set(
+                            (Math.random() - 0.5) * 1.2,
+                            0.8 + Math.random() * 1.5,
+                            (Math.random() - 0.5) * 1.2
+                        );
                     });
                 }
             } else {
@@ -892,22 +914,45 @@
                     lid.position.y = THREE.MathUtils.lerp(lid.position.y, targetY, 5 * dt);
                 }
 
-                // Animate surprise particles
+                // Animate surprise ribbons
                 if(gift.userData.isOpen && gift.userData.surprise) {
-                    gift.userData.surprise.children.forEach(p => {
-                        if(p.userData.life > 0) {
-                            p.position.add(p.userData.velocity.clone().multiplyScalar(dt * 2));
-                            p.userData.velocity.y -= dt * 0.5; // Gravity
-                            p.userData.life -= dt * 0.5;
-                            p.material.opacity = p.userData.life * 0.8;
+                    gift.userData.surprise.children.forEach(ribbon => {
+                        if(ribbon.userData.life > 0) {
+                            // Update position with velocity
+                            ribbon.position.add(ribbon.userData.velocity.clone().multiplyScalar(dt * 3));
 
-                            if(p.userData.life <= 0) {
-                                p.position.set(0, gift.userData.size * 0.5, 0);
-                                p.userData.life = 1.0;
-                                p.userData.velocity.set(
-                                    (Math.random() - 0.5) * 0.5,
-                                    Math.random() * 0.8,
-                                    (Math.random() - 0.5) * 0.5
+                            // Apply gravity
+                            ribbon.userData.velocity.y += ribbon.userData.gravity * dt;
+
+                            // Add air resistance
+                            ribbon.userData.velocity.multiplyScalar(0.98);
+
+                            // Ribbon rotation (flutter effect)
+                            ribbon.rotation.x += ribbon.userData.angularVelocity.x * dt;
+                            ribbon.rotation.y += ribbon.userData.angularVelocity.y * dt;
+                            ribbon.rotation.z += ribbon.userData.angularVelocity.z * dt;
+
+                            // Slow down rotation over time
+                            ribbon.userData.angularVelocity.multiplyScalar(0.95);
+
+                            // Fade out over time
+                            ribbon.userData.life -= dt * 0.4;
+                            ribbon.material.opacity = Math.max(0, ribbon.userData.life * 0.9);
+
+                            // Reset when life ends
+                            if(ribbon.userData.life <= 0) {
+                                ribbon.position.set(0, gift.userData.size * 0.5, 0);
+                                ribbon.rotation.set(0, 0, 0);
+                                ribbon.userData.life = 1.0;
+                                ribbon.userData.velocity.set(
+                                    (Math.random() - 0.5) * 1.2,
+                                    0.8 + Math.random() * 1.5,
+                                    (Math.random() - 0.5) * 1.2
+                                );
+                                ribbon.userData.angularVelocity.set(
+                                    (Math.random() - 0.5) * 8,
+                                    (Math.random() - 0.5) * 8,
+                                    (Math.random() - 0.5) * 8
                                 );
                             }
                         }

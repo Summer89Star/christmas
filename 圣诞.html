@@ -589,7 +589,7 @@
                 // Create colorful ribbons
                 const ribbonColors = [0xff0000, 0x00ff00, 0x0000ff, 0xffff00, 0xff00ff, 0x00ffff, 0xffa500, 0xff69b4];
 
-                for(let j = 0; j < 15; j++) {
+                for(let j = 0; j < 30; j++) {  // Increased from 15 to 30
                     // Create a ribbon shape (thin rectangle)
                     const ribbonGeo = new THREE.PlaneGeometry(0.15, 0.8);
                     const ribbonMat = new THREE.MeshBasicMaterial({
@@ -600,19 +600,19 @@
                     });
                     const ribbon = new THREE.Mesh(ribbonGeo, ribbonMat);
 
-                    // Random initial velocity
+                    // Stronger random initial velocity - shoots higher!
                     ribbon.userData.velocity = new THREE.Vector3(
-                        (Math.random() - 0.5) * 1.2,
-                        0.8 + Math.random() * 1.5,
-                        (Math.random() - 0.5) * 1.2
+                        (Math.random() - 0.5) * 2.0,      // Increased horizontal spread
+                        1.5 + Math.random() * 2.5,        // Much higher vertical velocity
+                        (Math.random() - 0.5) * 2.0
                     );
                     ribbon.userData.angularVelocity = new THREE.Vector3(
-                        (Math.random() - 0.5) * 8,
-                        (Math.random() - 0.5) * 8,
-                        (Math.random() - 0.5) * 8
+                        (Math.random() - 0.5) * 10,       // Faster rotation
+                        (Math.random() - 0.5) * 10,
+                        (Math.random() - 0.5) * 10
                     );
                     ribbon.userData.life = 1.0;
-                    ribbon.userData.gravity = -0.8;
+                    ribbon.userData.gravity = -1.2;       // Stronger gravity
 
                     surpriseGroup.add(ribbon);
                 }
@@ -801,11 +801,11 @@
                         p.rotation.set(0, 0, 0);
                         p.userData.life = 1.0;
                         p.material.opacity = 0.9;
-                        // Randomize velocity again for variety
+                        // Randomize velocity again for variety - shoot higher!
                         p.userData.velocity.set(
-                            (Math.random() - 0.5) * 1.2,
-                            0.8 + Math.random() * 1.5,
-                            (Math.random() - 0.5) * 1.2
+                            (Math.random() - 0.5) * 2.0,
+                            1.5 + Math.random() * 2.5,
+                            (Math.random() - 0.5) * 2.0
                         );
                     });
                 }
@@ -918,41 +918,41 @@
                 if(gift.userData.isOpen && gift.userData.surprise) {
                     gift.userData.surprise.children.forEach(ribbon => {
                         if(ribbon.userData.life > 0) {
-                            // Update position with velocity
-                            ribbon.position.add(ribbon.userData.velocity.clone().multiplyScalar(dt * 3));
+                            // Update position with velocity - much faster movement
+                            ribbon.position.add(ribbon.userData.velocity.clone().multiplyScalar(dt * 5));
 
-                            // Apply gravity
-                            ribbon.userData.velocity.y += ribbon.userData.gravity * dt;
+                            // Apply stronger gravity
+                            ribbon.userData.velocity.y += ribbon.userData.gravity * dt * 2;
 
                             // Add air resistance
                             ribbon.userData.velocity.multiplyScalar(0.98);
 
-                            // Ribbon rotation (flutter effect)
-                            ribbon.rotation.x += ribbon.userData.angularVelocity.x * dt;
-                            ribbon.rotation.y += ribbon.userData.angularVelocity.y * dt;
-                            ribbon.rotation.z += ribbon.userData.angularVelocity.z * dt;
+                            // Ribbon rotation (flutter effect) - faster rotation
+                            ribbon.rotation.x += ribbon.userData.angularVelocity.x * dt * 1.5;
+                            ribbon.rotation.y += ribbon.userData.angularVelocity.y * dt * 1.5;
+                            ribbon.rotation.z += ribbon.userData.angularVelocity.z * dt * 1.5;
 
                             // Slow down rotation over time
-                            ribbon.userData.angularVelocity.multiplyScalar(0.95);
+                            ribbon.userData.angularVelocity.multiplyScalar(0.96);
 
-                            // Fade out over time
-                            ribbon.userData.life -= dt * 0.4;
+                            // Fade out faster for quicker recycling
+                            ribbon.userData.life -= dt * 0.7;
                             ribbon.material.opacity = Math.max(0, ribbon.userData.life * 0.9);
 
-                            // Reset when life ends
+                            // Reset when life ends - faster cycle
                             if(ribbon.userData.life <= 0) {
                                 ribbon.position.set(0, gift.userData.size * 0.5, 0);
                                 ribbon.rotation.set(0, 0, 0);
                                 ribbon.userData.life = 1.0;
                                 ribbon.userData.velocity.set(
-                                    (Math.random() - 0.5) * 1.2,
-                                    0.8 + Math.random() * 1.5,
-                                    (Math.random() - 0.5) * 1.2
+                                    (Math.random() - 0.5) * 2.0,
+                                    1.5 + Math.random() * 2.5,
+                                    (Math.random() - 0.5) * 2.0
                                 );
                                 ribbon.userData.angularVelocity.set(
-                                    (Math.random() - 0.5) * 8,
-                                    (Math.random() - 0.5) * 8,
-                                    (Math.random() - 0.5) * 8
+                                    (Math.random() - 0.5) * 10,
+                                    (Math.random() - 0.5) * 10,
+                                    (Math.random() - 0.5) * 10
                                 );
                             }
                         }

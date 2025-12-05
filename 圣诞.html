@@ -732,6 +732,9 @@
         }
 
         function onGiftClick(event) {
+            // Prevent if clicking on UI elements
+            if(event.target !== renderer.domElement) return;
+
             // Calculate mouse position in normalized device coordinates
             const rect = renderer.domElement.getBoundingClientRect();
             mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -739,43 +742,59 @@
 
             raycaster.setFromCamera(mouse, camera);
 
-            // Check for intersections with gift boxes
-            const intersects = raycaster.intersectObjects(mainGroup.children, true);
+            // Check for intersections with ALL objects, get closer ones first
+            const allIntersects = raycaster.intersectObjects(scene.children, true);
 
-            for(let intersect of intersects) {
+            // Debug: log intersections
+            console.log('Clicked at:', mouse.x, mouse.y, 'Intersections:', allIntersects.length);
+
+            // Find the closest gift box
+            for(let intersect of allIntersects) {
                 let obj = intersect.object;
-                // Traverse up to find the gift group
-                while(obj.parent && !obj.userData.isGift) {
-                    obj = obj.parent;
-                }
 
-                if(obj.userData.isGift) {
-                    toggleGiftBox(obj);
-                    break;
+                // Traverse up to find the gift group
+                let searchDepth = 0;
+                while(obj && searchDepth < 10) {
+                    if(obj.userData && obj.userData.isGift) {
+                        console.log('Found gift box!', obj);
+                        toggleGiftBox(obj);
+                        return;
+                    }
+                    obj = obj.parent;
+                    searchDepth++;
                 }
             }
+            console.log('No gift box found at click position');
         }
 
         function toggleGiftBox(gift) {
+            console.log('Toggling gift box. Current state:', gift.userData.isOpen);
             gift.userData.isOpen = !gift.userData.isOpen;
 
             if(gift.userData.isOpen) {
+                console.log('Opening gift box');
                 // Open animation
                 gift.userData.targetLidRotation = Math.PI * 0.6;
                 gift.userData.targetLidY = gift.userData.size * 0.8;
-                gift.userData.surprise.visible = true;
 
-                // Reset surprise particles
-                gift.userData.surprise.children.forEach(p => {
-                    p.position.set(0, gift.userData.size * 0.5, 0);
-                    p.userData.life = 1.0;
-                    p.material.opacity = 0.8;
-                });
+                if(gift.userData.surprise) {
+                    gift.userData.surprise.visible = true;
+
+                    // Reset surprise particles
+                    gift.userData.surprise.children.forEach(p => {
+                        p.position.set(0, gift.userData.size * 0.5, 0);
+                        p.userData.life = 1.0;
+                        p.material.opacity = 0.8;
+                    });
+                }
             } else {
+                console.log('Closing gift box');
                 // Close animation
                 gift.userData.targetLidRotation = 0;
                 gift.userData.targetLidY = gift.userData.size * 0.6;
-                gift.userData.surprise.visible = false;
+                if(gift.userData.surprise) {
+                    gift.userData.surprise.visible = false;
+                }
             }
         }
 
